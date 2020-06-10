@@ -35,18 +35,22 @@ long b2l(unsigned char *b, int count)
 	return out;
 }
 
-int extractFile(const char *filename)
+int extractFile(const char *dir, const char *filename)
 {
 	int fd, ft, i, mp, pos;
 	long sz;
 	char *b;
 	struct gx *g;
 	char name[5];
-	char targetFilename[80];
-	strcpy(targetFilename, filename);
+	char sourceFilename[251], targetFilename[255];
+	strcpy(sourceFilename, dir);
+	strcat(sourceFilename, filename);
+	
+	strcpy(targetFilename, dir);
+	strcat(targetFilename, filename);
 	strcat(targetFilename, ".srt");
 
-	fd = open(filename, O_RDONLY);
+	fd = open(sourceFilename, O_RDONLY);
 	if (fd < 0) {
 		perror("open");
 		return -1;
@@ -119,13 +123,19 @@ int main(int argc, char *argv[])
 {
     DIR *dp;
     struct dirent *ep;
-    dp = opendir(argv[1]);
+    char *dir = argv[1];
+
+    if (!endsWith(dir, "/"))
+    	strcat(dir, "/");
+
+
+    dp = opendir(dir);
 
     if (dp != NULL)
     {
         while (ep = readdir(dp))
             if (endsWith(ep->d_name, ".MP4") || endsWith(ep->d_name, ".mp4"))
-                extractFile(ep->d_name);
+                extractFile(dir, ep->d_name);
 
     	(void) closedir(dp);
     }
